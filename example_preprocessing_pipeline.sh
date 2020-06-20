@@ -7,30 +7,60 @@
 # best practices for best results. There is really no good reason to re-invent the wheel and do
 # your own preprocessing.
 # The purpose of this script is to provide examples and resources for you to understand, conceptually,
-# how fMRI preprocessing works.
+# how fMRI preprocessing works. We use both AFNI and FSL tools.
+# https://afni.nimh.nih.gov/
+# https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSL
 
-#bash hate spaces. set working directory so we can use full path instead of relative path to minimize error
+
+# Set the working directory so we can use full path instead of relative path to minimize error
 WD='/data/backed_up/shared/fMRI_Practice/Example_Preprocessing_Pipeline'
 
+### Data quality check
+# This step is now mostly acomplished by mriqc
+# We will search for outliers using 3dToutcount, it will count the voxels that show intensity larger or greater
+# then a predefined range, typically 3 median defined absolute deviation.
+3dToutcount -automask -fraction -polort 3 -legendre                     \
+    ${WD}/sub-20200212TEST_task-MB3pe0_run-001_bold.nii.gz > ${WD}/outcount.1D
 
-### Motion correction of functional data
+# You can then plot the data, and consider remove datapoints with large number of outliers.
+# For example, we often remove the first few TRs.
+1dplot ${WD}/outcount.1D
+
+# We can also "despike" data to interplote data from nearby timepoints to replace outliers
+3dDespike -NEW -nomask -prefix ${WD}/sub-20200212TEST_task-MB3pe0_run-001_ds_bold.nii.gz \
+    ${WD}/sub-20200212TEST_task-MB3pe0_run-001_bold.nii.gz
+
+
+### Motion correction
 # For details see https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/MCFLIRT
 # Here we explain some of the arguments:
-# "-dof 6": Here we use dof of 6, which implements rigid body alignment. This is the most common
+# Here we use dof of 6, which implements rigid body alignment. This is the most common
 # choice for fMRI motion correction, or any kind of alignment within the same imaging modality.
-# "-cost "": For cost function, we will use normal correlation, this is typically the default for BOLD fMRI
-# "=spline_fianl": We will set the final interpolation to spline (sinc is fine too). That gives the most "crip"
-# shaper, final results.
-# To understand what final interpolation, cost function, and DOF mean, check out:
-# https://www.youtube.com/watch?v=PaZinetFKGY&list=PL_CD549H9kgqJ1GDXAs1BWkgEimAHZeNX&index=2&t=9s
-# Finally, we will save the motion parameters with the -mats and -plots options.
-# The "reference" image is the mean image across times.
+# Finally, we will save the motion parameters with the -1d.
+# The "reference" image is the mean image across times, calculated using 3dTstat
 
-mcflirt -out ${WD}/sub-20200212TEST_task-MB3_run-001_mc_bold.nii.gz \
--in ${WD}/sub-20200212TEST_task-MB3pe0_run-001_bold.nii.gz \
--spline_final \
--cost normcorr \
--dof 6 -meanvol -mats -plots
+3dTstat -prefix ${WD}/Tmean.nii.gz ${WD}/sub-20200212TEST_task-MB3pe0_run-001_ds_bold.nii.gz
+3dvolreg -verbose -zpad 1 -base ${WD}/Tmean.nii.gz \
+    -1Dfile motion.1D -prefix ${WD}/sub-20200212TEST_task-MB3pe0_run-001_mc_bold.nii.gz \
+    -cubic \
+    -maxdisp1D maxdisp.1D \
+    ${WD}/sub-20200212TEST_task-MB3pe0_run-001_ds_bold.nii.gz
+
+# The motion paramter file has 6 different columns, which represents the 6 paramter rigid body paramters
+# They are roll pitch yaw dS  dL  dP
+# we can plot the motion parameters, and calculate "euclidean norm" to get a measure of how much subjects
+# move time point to timepoint. The calcualtion of this is slightly different from mriqc's "frame-wise displacement" FD,
+# but conceptually similar
+1dplot ${WD}/motion.1D
+
+1d_tool.py -infile ${WD}/motion.1D \
+    -derivative  -collapse_cols euclidean_norm  \
+    -write enorm.1D
+
+1dplot ${WD}/enorm.1D
+
+## Altogether, enorm.1D, outocunt.1D can help us decide if there are timepoints we should consider remove from the data
+
 
 ### Optional step, slice timing correction
 # Because BOLD fMRI is slow, often times take 1 to 2 seconds to acquire
@@ -45,7 +75,8 @@ mcflirt -out ${WD}/sub-20200212TEST_task-MB3_run-001_mc_bold.nii.gz \
 # for more background, check out https://matthew-brett.github.io/teaching/slice_timing.html
 cat sub-20200212TEST_task-MB3pe0_run-001_bold.json | grep SliceTiming | grep -Eo "[0-9]*\.*[0-9]*" > slice_timing.txt
 3dTshift -prefix shifted.nii.gz -tpattern @slice_timing.txt sub-20200212TEST_task-MB3pe0_run-001_bold.nii.gz
-
+# You will notice we did not use the shifted.nii.gz in the later steps. If yo wish to incoroporate this step
+# you should use that file as the input to your later processing calls.
 
 ### Brain extraction
 # We need to know what is the spatial exten of the brain in our MRI images.
@@ -66,7 +97,7 @@ fast -B ${WD}/T1w_brain.nii.gz
 3dcalc -a ${WD}/T1w_brain_mixeltype.nii.gz -expr 'equals(a,2)' -prefix ${WD}/T1w_wm.nii.gz
 
 
-#### Alignment
+#### Alignment / Registration / Spatial normalization
 # First check out the following to understand image registration and alingment
 # http://jpeelle.net/mri/image_processing/registration.html
 # https://www.youtube.com/watch?v=PaZinetFKGY&list=PL_CD549H9kgqJ1GDXAs1BWkgEimAHZeNX&index=2&t=9s
@@ -83,8 +114,8 @@ fast -B ${WD}/T1w_brain.nii.gz
 # "--epi" stands for echo planar imaging, which is the sequecne for BOLD, is the input.
 # "--t1" and "--t1brain" is the anatomcial image with and without brain extraction. This is the
 # target for moving the BOLD to be alinged with.
-epi_reg --wmseg=${WD}/T1w_wm.nii.gz --epi=${WD}/sub-20200212TEST_task-MB3_run-001_mc_bold_mean_reg.nii.gz \
---t1=${WD}/sub-20200130_T1w.nii.gz --t1brain=${WD}/T1w_brain.nii.gz --out=${WD}/func2struct
+epi_reg --wmseg=${WD}/T1w_wm.nii.gz --epi=${WD}/Tmean.nii.gz \
+    --t1=${WD}/sub-20200130_T1w.nii.gz --t1brain=${WD}/T1w_brain.nii.gz --out=${WD}/func2struct
 
 
 ### Align anatomical with MNI atlas
@@ -94,20 +125,20 @@ epi_reg --wmseg=${WD}/T1w_wm.nii.gz --epi=${WD}/sub-20200212TEST_task-MB3_run-00
 # the "warping" parameters will be saved to _warp.nii.gz
 # the target of the alignment is the MNI atlas
 flirt -in ${WD}/T1w_brain.nii.gz -ref $FSLDIR/data/standard/MNI152_T1_2mm_brain.nii.gz \
--dof 12 -out ${WD}/T1toMNIlin.nii.gz -omat ${WD}/T1toMNIlin.mat
+    -dof 12 -out ${WD}/T1toMNIlin.nii.gz -omat ${WD}/T1toMNIlin.mat
 fnirt --in=${WD}/T1w_brain.nii.gz --aff=${WD}/T1toMNIlin.mat \
---config=${WD}/T1_2_MNI152_2mm.cnf --iout=${WD}/T1toMNInonlin.nii.gz \
---cout=${WD}/T1toMNI_coef.nii.gz --fout=${WD}/T1toMNI_warp.nii.gz
+    --config=${WD}/T1_2_MNI152_2mm.cnf --iout=${WD}/T1toMNInonlin.nii.gz \
+    --cout=${WD}/T1toMNI_coef.nii.gz --fout=${WD}/T1toMNI_warp.nii.gz
 
 
 ### Project BOLD into MNI space
 # Here, we will combine the BOLD_to_T1 transformation matrix with the T1_to_MNI warping into one transformation
 # and apply that to the motion corrected functional data. We will use spline interpolation for sharper results.
 applywarp --ref=$FSLDIR/data/standard/MNI152_T1_2mm_brain.nii.gz \
---in=${WD}/sub-20200212TEST_task-MB3_run-001_mc_bold.nii.gz \
---warp=${WD}/T1toMNI_warp.nii.gz --premat=${WD}/func2struct.mat \
---interp=spline \
---out=sub-20200212TEST_task-MB3_run-001_mc_MNI_bold.nii.gz
+    --in=${WD}/sub-20200212TEST_task-MB3_run-001_mc_bold.nii.gz \
+    --warp=${WD}/T1toMNI_warp.nii.gz --premat=${WD}/func2struct.mat \
+    --interp=spline \
+    --out=sub-20200212TEST_task-MB3_run-001_mc_MNI_bold.nii.gz
 
 
 ### Intensity scaling. Convert signal to percent of signal change relative the mean.
@@ -115,8 +146,8 @@ applywarp --ref=$FSLDIR/data/standard/MNI152_T1_2mm_brain.nii.gz \
 # see https://sscc.nimh.nih.gov/sscc/gangc/TempNorm.html
 3dTstat -prefix meanBOLD_MNI.nii.gz sub-20200212TEST_task-MB3_run-001_mc_MNI_bold.nii.gz
 3dcalc -a sub-20200212TEST_task-MB3_run-001_mc_MNI_bold.nii.gz -b meanBOLD_MNI.nii.gz \
-       -expr '(a/b*100)*step(a)*step(b)'       \
-       -prefix sub-20200212TEST_task-MB3_run-001_mc_MNI_scaled_bold.nii.gz
+    -expr '(a/b*100)*step(a)*step(b)'       \
+    -prefix sub-20200212TEST_task-MB3_run-001_mc_MNI_scaled_bold.nii.gz
 
 
 ### Spatial smoothing
@@ -124,4 +155,4 @@ applywarp --ref=$FSLDIR/data/standard/MNI152_T1_2mm_brain.nii.gz \
 # to do spatial smoothing and make signals from nearby voxels look more alike.
 # see: http://jpeelle.net/mri/image_processing/smoothing.html
 3dmerge -1blur_fwhm 4 -doall -prefix sub-20200212TEST_task-MB3_run-001_mc_MNI_scaled_bold_sm4.nii.gz \
-               sub-20200212TEST_task-MB3_run-001_mc_MNI_scaled_bold.nii.gz
+    sub-20200212TEST_task-MB3_run-001_mc_MNI_scaled_bold.nii.gz
