@@ -136,8 +136,8 @@ http://web.mit.edu/fsl_v5.0.10/fsl/doc/wiki/FNIRT(2f)UserGuide.html
       -omat ${WD}/T1toMNIlin.mat
 
     fnirt --in=${WD}/T1w_brain.nii.gz \
+      --ref=$FSLDIR/data/standard/MNI152_T1_2mm_brain.nii.gz \
       --aff=${WD}/T1toMNIlin.mat \
-      --config=${WD}/T1_2_MNI152_2mm.cnf \
       --iout=${WD}/T1toMNInonlin.nii.gz \
       --cout=${WD}/T1toMNI_coef.nii.gz \
       --fout=${WD}/T1toMNI_warp.nii.gz
