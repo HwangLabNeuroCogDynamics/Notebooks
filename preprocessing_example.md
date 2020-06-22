@@ -147,11 +147,11 @@ http://web.mit.edu/fsl_v5.0.10/fsl/doc/wiki/FNIRT(2f)UserGuide.html
 Here, we will combine the BOLD_to_T1 transformation matrix with the T1_to_MNI warping into one transformation and apply that to the motion corrected functional data. We will use spline interpolation for sharper results.
 
     applywarp --ref=$FSLDIR/data/standard/MNI152_T1_2mm_brain.nii.gz \
-      --in=${WD}/sub-20200212TEST_task-MB3_run-001_mc_bold.nii.gz \
+      --in=${WD}/sub-20200212TEST_task-MB3pe0_run-001_mc_bold.nii.gz \
       --warp=${WD}/T1toMNI_warp.nii.gz --premat=${WD}/func2struct.mat \
       --interp=spline \
       --out=sub-20200212TEST_task-MB3_run-001_mc_MNI_bold.nii.gz
-
+    
 
 ### Intensity scaling
 Convert signal to percent of signal change that is relative the temporal mean. BOLD signal do not have absolute scale, so we need to normalize the scale to facilitate comparison between scans and between subjects. See https://sscc.nimh.nih.gov/sscc/gangc/TempNorm.html
