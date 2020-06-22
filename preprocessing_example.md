@@ -106,8 +106,8 @@ This step creates different tissue masks that separate white matter, CSF, and gr
 First check out the following to understand image registration and alignment \
 http://jpeelle.net/mri/image_processing/registration.html \
 https://www.youtube.com/watch?v=PaZinetFKGY&list=PL_CD549H9kgqJ1GDXAs1BWkgEimAHZeNX&index=2&t=9s \
-https://afni.nimh.nih.gov/pub/dist/edu/latest/afni14_alignment/afni14_alignment.pdf\
-https://www.fmrib.ox.ac.uk/primers/intro_primer/ExBox18/IntroBox18.html\
+https://afni.nimh.nih.gov/pub/dist/edu/latest/afni14_alignment/afni14_alignment.pdf \
+https://www.fmrib.ox.ac.uk/primers/intro_primer/ExBox18/IntroBox18.html
 
 
 ### Align BOLD with anatomical
@@ -153,7 +153,7 @@ Here, we will combine the BOLD_to_T1 transformation matrix with the T1_to_MNI wa
       --out=sub-20200212TEST_task-MB3_run-001_mc_MNI_bold.nii.gz
 
 
-### Intensity scaling.
+### Intensity scaling
 Convert signal to percent of signal change that is relative the temporal mean. BOLD signal do not have absolute scale, so we need to normalize the scale to facilitate comparison between scans and between subjects. See https://sscc.nimh.nih.gov/sscc/gangc/TempNorm.html
 
     3dTstat -prefix ${WD}/meanBOLD_MNI.nii.gz ${WD}/sub-20200212TEST_task-MB3_run-001_mc_MNI_bold.nii.gz
@@ -177,7 +177,7 @@ http://jpeelle.net/mri/image_processing/smoothing.html
       ${WD}/sub-20200212TEST_task-MB3_run-001_mc_MNI_scaled_bold.nii.gz
 
 
-### Perform nuisance regressions
+### Nuisance regression
 BOLD data are noisy and are contaminated by physiological noise (breathing, cardio), machine noise, and motion related artifacts. These signals most likely do not have a "neuronal" origin, and therefore are not of interest to most researchers.
 There are many "de-noisng" strategies for reducing the influence of noise sources. One of the most common strategy is to perform nuisance regression, where estimates of noise signals are entered into a regression model as predictor, and variances that can explained by noise sources are removed from the data before more analyses. The nuisance regressors that are commonly used include rigid body motion parameters, signals from CSF and white matter (again not of neuronal origin). For task fMRI, these nuisance regressors will be included along with task regressors, so nuisance regression is most often not a separate step by itself. Instead it is merged into the main regression analysis. For resting-state fMRI, we often perform nuisance regression on its own. Below is an example
 
