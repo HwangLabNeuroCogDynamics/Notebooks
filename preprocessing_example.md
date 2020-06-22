@@ -117,7 +117,7 @@ https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FLIRT_BBR \
 To impelemt BBR, it is necessary to map out the gray/white matter boundary. We will therefore feed the program the the white matter mask we obtained from FAST with the "--wmseg" option. Rest of the input arguments should be pretty self explanatory. "--epi" stands for echo planar imaging, which is the sequecne for BOLD, is the input. "--t1" and "--t1brain" is the anatomcial image with and without brain extraction. This is the target for moving the BOLD to be alinged with.
 
     epi_reg --wmseg=${WD}/T1w_wm.nii.gz \
-      -epi=${WD}/Tmean.nii.gz \
+      --epi=${WD}/Tmean.nii.gz \
       --t1=${WD}/sub-20200130_T1w.nii.gz \
       --t1brain=${WD}/T1w_brain.nii.gz \
       --out=${WD}/func2struct
