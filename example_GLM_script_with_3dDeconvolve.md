@@ -23,7 +23,7 @@ Then, you should finish these two coursera videos on general linear model (GLM).
 - [part 4](https://www.youtube.com/watch?v=YfeMIcDWwko)
 - [part 5](https://www.youtube.com/watch?v=DEtwsFdFwYc)
 - [part 6](https://www.youtube.com/watch?v=NRunOo7EKD8) \
-This is a lot, but we actually skipped quite a few!
+
 
 We will be using AFNI's [3dDeconvolve](https://afni.nimh.nih.gov/pub/dist/doc/program_help/3dDeconvolve.html) to perform GLM analysis. It is a versatile, powerful tool, but with a bit of a learning curve. AFNI bootcamp has a series of excellent [youtube videos](https://www.youtube.com/watch?v=iZ7ci1Pw-_o&list=PL_CD549H9kgpLv7qW0cP03S-JBPHscg9i) that you should watch.
 
