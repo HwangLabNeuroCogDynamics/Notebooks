@@ -40,10 +40,10 @@ The "reference" image is the mean image across times, we will move all volumes t
 
     3dvolreg -verbose -zpad 1 \
       -base ${WD}/Tmean.nii.gz \
-      -1Dfile motion.1D \
+      -1Dfile ${WD}/motion.1D \
       -prefix ${WD}/sub-20200212TEST_task-MB3pe0_run-001_mc_bold.nii.gz \
       -cubic \
-      -maxdisp1D maxdisp.1D \
+      -maxdisp1D ${WD}/maxdisp.1D \
       ${WD}/sub-20200212TEST_task-MB3pe0_run-001_ds_bold.nii.gz
 
 The motion parameter file "motion.1D" has 6 different columns, each represents the one of the rigid body parameters. \
@@ -57,7 +57,7 @@ the subject moved between successive TRs." This calculation is slightly differen
 
     1d_tool.py -infile ${WD}/motion.1D \
       -derivative  -collapse_cols euclidean_norm  \
-      -write enorm.1D
+      -write ${WD}/enorm.1D
 
     1dplot ${WD}/enorm.1D
 
@@ -71,14 +71,15 @@ To do that we can look into the data fields saved in the json file created durin
 for more background, check out:\
 https://matthew-brett.github.io/teaching/slice_timing.html
 
-    cat sub-20200212TEST_task-MB3pe0_run-001_bold.json | grep SliceTiming | grep -Eo "[0-9]+\.*[0-9]*" > slice_timing.txt
+    cat ${WD}/sub-20200212TEST_task-MB3pe0_run-001_bold.json | grep SliceTiming | grep -Eo "[0-9]+\.*[0-9]*" > ${WD}/slice_timing.txt
 
 The "grep" command above uses regular expression to extract data that matches the pattern we specified. For a brief intro, see: \
 https://regexr.com/
-
+    
+    cd ${WD}/
     3dTshift -prefix shifted.nii.gz \
       -tpattern @slice_timing.txt \
-      sub-20200212TEST_task-MB3pe0_run-001_bold.nii.gz
+      ${WD}/sub-20200212TEST_task-MB3pe0_run-001_bold.nii.gz
 
 You will notice that we did not use the output file shifted.nii.gz in the later steps. If yo wish to incorporate this step you should use that file as the input to your later processing calls.
 
