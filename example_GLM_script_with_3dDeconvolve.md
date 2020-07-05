@@ -155,6 +155,26 @@ The next part specifies the conditions that we want to model:
 The stimu_times flag will read in the stimulus timing, and then model using  "TENT" basis function. This is perhaps the most important part of 3dDeconvolve. To understand all the different ways you can model your conditions, see: https://afni.nimh.nih.gov/pub/dist/doc/misc/Decon/2007_0504_basis_funcs.html <br>
 We typically use TENT for event related design, and GAM for block design or conditions that we want to assume a HRF shape. TENT is equivalent to the finite impulse function (FIR approach). TENT(0, 13.6, 9) means we are modeling for 0 to 13.6 seconds after the stimulus onset, using 9-1 = 8 tent basis functions. 13.6 / 8 = 1.7, which is the TR of this particular dataset.
 
+For assuming a gamma function to model the HRF:
+
+    -stim_times 1 /data/backed_up/shared/fMRI_Practice/ScanLogs/110_MB3_EDS_stimtime.1D.txt 'GAM' -stim_label 1 EDS \
+    -stim_times 2 /data/backed_up/shared/fMRI_Practice/ScanLogs/110_MB3_IDS_stimtime.1D.txt 'GAM' -stim_label 2 IDS \
+    -stim_times 3 /data/backed_up/shared/fMRI_Practice/ScanLogs/110_MB3_Stay_stimtime.1D.txt 'GAM' -stim_label 3 Stay \
+    -iresp 1 ${outputpath}/sub-20190516_EDS_FIR_MNI.nii.gz \
+    -iresp 2 ${outputpath}/sub-20190516_IDS_FIR_MNI.nii.gz \
+    -iresp 3 ${outputpath}/sub-20190516_Stay_FIR_MNI.nii.gz \
+
+For other basis function and its usage, check out the 3dDeconvolve help file. For example, some like to use the SPM version of gamma function that in addition to estimating the "height" or "amplitude" of the response it also trys to account for slight variation in the HRF shape.  
+
+    -stim_times 1 /data/backed_up/shared/fMRI_Practice/ScanLogs/110_MB3_EDS_stimtime.1D.txt 'SPMG3' -stim_label 1 EDS \
+    -stim_times 2 /data/backed_up/shared/fMRI_Practice/ScanLogs/110_MB3_IDS_stimtime.1D.txt 'SPMG3' -stim_label 2 IDS \
+    -stim_times 3 /data/backed_up/shared/fMRI_Practice/ScanLogs/110_MB3_Stay_stimtime.1D.txt 'SPMG3' -stim_label 3 Stay \
+    -iresp 1 ${outputpath}/sub-20190516_EDS_FIR_MNI.nii.gz \
+    -iresp 2 ${outputpath}/sub-20190516_IDS_FIR_MNI.nii.gz \
+    -iresp 3 ${outputpath}/sub-20190516_Stay_FIR_MNI.nii.gz \
+
+Feel free to try all these options and test the difference. There is no "right" or "best" answer, there is however a reasonable and a wrong approach.
+
 The next part is to contrast different conditions and perform hypotheses tests:
 
     -num_glt 7 \
@@ -166,7 +186,7 @@ The next part is to contrast different conditions and perform hypotheses tests:
     -gltsym 'SYM: +1*EDS + 1*IDS + 1*Stay' -glt_label 6 All \
     -gltsym 'SYM: +1*EDS + 1*IDS - 2*Stay' -glt_label 7 Switch \
 
-The rest is to specify the output. We are saving the statistics as well as the residual timeseries:
+The stats output will be saved into a "bucket" file, specified below. The rest is to specify the output. We are saving the statistics as well as the residual timeseries:
 
     -rout \
     -tout \
@@ -214,4 +234,4 @@ It is now recommended that also run [3dREMLfit](https://afni.nimh.nih.gov/pub/di
 
 ## Other things to consider
 
-In the above example, we did not "remove" any data points that were likely contaminated by excessive noise. fMRIprep does save the "frame-wise displacement" measure in the nuisance regressor output. AFNI provides a "-censor" option to remove data points.
+In the above example, we did not "remove" any data points that were likely contaminated by excessive noise. fMRIprep does have the "frame-wise displacement" measure saved in the nuisance regressor output. AFNI provides a "-censor" option to remove data points. This is also known as "scrubbing" in the literature. What you would have to do is create a 1D file, which has a column with the same length as your input functional run. In the column, each row is a TR, and 1s indicating TRs to be included for analysis, 0s for TR to be excluded. You will need to create a python script to create this censor list. Alternatively, you can extract the rigid body motion regressors, and run it through AFNI's [1d_tool.py](https://afni.nimh.nih.gov/pub/dist/doc/program_help/1d_tool.py.html) to create a "enorm" file, and censor data points accordingly. "enorm" is conceptually similar to FD, but not the same. See [this](https://afni.nimh.nih.gov/afni/community/board/read.php?1,143809,144115#msg-144115) and [this](https://afni.nimh.nih.gov/afni/community/board/read.php?1,148852,148854#msg-148854). AFNI's 1d_tool.py [1d_tool.py](https://afni.nimh.nih.gov/pub/dist/doc/program_help/1d_tool.py.html) can take a 6 rigid body motion file and create an input for 3dDeconvolve to censor high motion TRs.
