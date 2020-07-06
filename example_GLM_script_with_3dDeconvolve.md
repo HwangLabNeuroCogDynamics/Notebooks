@@ -113,8 +113,8 @@ Now that we have the inputs ready, below is the complete 3dDeconvolve script:
     -iresp 3 ${outputpath}/sub-20190516_Stay_FIR_MNI.nii.gz \
     -num_glt 7 \
     -gltsym 'SYM: +1*EDS' -glt_label 1 EDS \
-    -gltsym 'SYM: +1*EDS' -glt_label 2 IDS \
-    -gltsym 'SYM: +1*EDS' -glt_label 3 Stay \
+    -gltsym 'SYM: +1*IDS' -glt_label 2 IDS \
+    -gltsym 'SYM: +1*Stay' -glt_label 3 Stay \
     -gltsym 'SYM: +1*EDS - 1*IDS' -glt_label 4 EDS-IDS \
     -gltsym 'SYM: +1*IDS - 1*Stay' -glt_label 5 IDS-Stay \
     -gltsym 'SYM: +1*EDS + 1*IDS + 1*Stay' -glt_label 6 All \
