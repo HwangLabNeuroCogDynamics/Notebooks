@@ -4,7 +4,7 @@ Generate dicominfo.txt
 
     singularity run -B /data:/data/ /data/backed_up/shared/bin/heudiconv_0.8.0.sif \
     -d /data/backed_up/shared/ThalHi_MRI_2020/Raw/{subject}/SCANS/*/DICOM/*.dcm \
-    -o /data/backed_up/shared/ThalHi_MRI_2020/BIDS \
+    -o /data/backed_up/shared/ThalHi_MRI_2020/BIDS_test \
     -f /data/backed_up/shared/bin/heudiconv/heuristics/convertall.py -s JH -c none --overwrite
 
 Convert dicom to BIDS
