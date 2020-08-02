@@ -1,12 +1,17 @@
 
 
-Generate dicominfo.txt
+We first need to generate a dicominfo.txt to look at the dicom parameters. 
 
     singularity run -B /data:/data/ /data/backed_up/shared/bin/heudiconv_0.8.0.sif \
     -d /data/backed_up/shared/ThalHi_MRI_2020/Raw/{subject}/SCANS/*/DICOM/*.dcm \
     -o /data/backed_up/shared/ThalHi_MRI_2020/BIDS \
     -f /data/backed_up/shared/bin/heudiconv/heuristics/convertall.py -s JH -c none --overwrite
 
+After running this script, then you would have to go to the output folder (/data/backed_up/shared/ThalHi_MRI_2020/BIDS), and find a hidden folder .heudiconv to locate the dicominfo.txt
+From that file you should be able to identify the key parameters for each MRI series and edit the conversion heuristic file.
+For this example, we will use the heuristic file /data/backed_up/shared/bin/heudiconv/heuristics/thalhi.py
+
+You would have to "delete" the files under .heudiconv in order to succesfully run the conversion:
 Convert dicom to BIDS
 
     singularity run -B /data:/data/ /data/backed_up/shared/bin/heudiconv_0.8.0.sif \
@@ -17,7 +22,7 @@ Convert dicom to BIDS
 
 
 
-Edit json for field FieldMap
+Edit json for field FieldMap.
 In order for fmriprep to recognize fieldmap data during preprocessing, an addition field must be inserted into each fieldmap's jason file.
 
     "IntendedFor": ["func/sub-20200130_task-MB3_run-001_bold.nii.gz", "func/sub-20200130_task-MB2_run-001_bold.nii.gz"],
