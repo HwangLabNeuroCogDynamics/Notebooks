@@ -1,4 +1,4 @@
-# Introduction
+# FC analysis with nilearn
 This is an example of how to use nilearn and nibabel to load preprocessed nitfi files, and do functional connectivity analysis.
 
 
