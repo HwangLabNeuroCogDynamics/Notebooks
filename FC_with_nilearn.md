@@ -1,8 +1,9 @@
 # FC analysis with nilearn
 This is an example of how to use nilearn and nibabel to load preprocessed nitfi files, and do functional connectivity analysis.
 
-
-How to load MRI (nifti) data into python using nibabel and nilearn
+nilearn and nibabel are both very well documented. So spend some time going throuhgh its documentations would be very helpful:
+https://nipy.org/nibabel/ \
+https://nilearn.github.io/user_guide.html
 
 If you don't have nibabel and nilearn installed, do:
 
