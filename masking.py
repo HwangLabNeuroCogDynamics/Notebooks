@@ -2,7 +2,7 @@ import numpy as np
 import nibabel as nib
 from scipy.stats import rankdata
 import nilearn
-from nilearn import plotting
+from nilearn import plotting, input_data
 import matplotlib.pyplot as plt
 
 group_ffa_mask = nib.load('/data/backed_up/shared/xitchen_WM/stats/FFA_cluster1.nii.gz')
