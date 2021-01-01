@@ -109,6 +109,13 @@ Now let us do the correlation (functional connectivity analysis):
       seed_to_voxel_correlations[r,0] = np.corrcoef(brain_time_series[:,r],time_series[:,5])[0,1]
 
 
+Looks like it is possible to use np.dot, dot product, to speed up the calculation. See:
+https://nilearn.github.io/auto_examples/03_connectivity/plot_seed_to_voxel_correlation.html
+
+
+Then plot it:
+
+
     from nilearn import plotting
 
     seed_to_voxel_correlations_img = brain_masker.inverse_transform(
