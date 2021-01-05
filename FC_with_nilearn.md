@@ -112,6 +112,9 @@ Now let us do the correlation (functional connectivity analysis):
 Looks like it is possible to use np.dot, dot product, to speed up the calculation. See:
 https://nilearn.github.io/auto_examples/03_connectivity/plot_seed_to_voxel_correlation.html
 
+Then normalize it with the length of the vector:
+https://matthew-brett.github.io/teaching/correlation_projection.html#:~:text=The%20Pearson%20product%2Dmoment%20correlation%20coefficient%20is%20the%20dot%20product,the%20vectors%20to%20unit%20length
+
 
 Then plot it:
 
