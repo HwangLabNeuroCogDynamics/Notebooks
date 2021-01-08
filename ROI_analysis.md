@@ -1,6 +1,6 @@
-We often want to extract or summarize values in a functional region. To do that, we will need to have a "mask" that marks the location of voxels within the functional region you are interested in, then we "apply the mask" to the functional data that to the functional data you want to study. The functional data can be a statistical output from 3dDeconvovle, or estimates of functional connectivity.
+We often want to extract or summarize values in a functional region. To do that, we will need to have a "mask" that marks the location of voxels within the functional region you are interested in, then we "apply the mask" to the functional data that you want to study. The functional data can be a statistical output from 3dDeconvovle, or estimates of functional connectivity.
 
-Here we will go ver a few ways you can do this.
+Here is an example of using AFNI's 3dROIstats.
 
 First you need to have a "mask" nifti file ready. This mask file contains the regions of interests (ROI), by indexing voxel values within the ROI(s) with different integer numbers, and voxels outside the ROI as zero. For example here is a file that we can use.
 
@@ -9,9 +9,10 @@ First you need to have a "mask" nifti file ready. This mask file contains the re
     Number of values stored at each pixel = 1
     -- At sub-brick #0 '?' datum type is short:            0 to            17
 
+Also try to use afni to visulize this data.
 
 You will see that this file contains voxel values of 0 to 17. Each of these voxel values indicate a different thalamic nucleus: #1:AN #2:VM #3:VL #4:MGN #5:MD #6:PuA #7:LP #8:IL #9:VA #10:Po #11:LGN #12:PuM #13:PuI #14:PuL #17:VP
-So if a voxel has integer values of "5", that means that voxel belongs to the mediodorsal (MD) nucleus. If a voxel has a value of 12, then it is a part of the medial puvlinar (PuM).
+So if a voxel has an integer values of "5", that means that voxel belongs to the mediodorsal (MD) nucleus. If a voxel has a value of 12, then it is a part of the medial puvlinar (PuM).
 
 We can use several AFNI programs to summarize these ROIs. For example for the thalhi task, we have several contrasts of interest: EDS v IDS, IDS v Stay. What if we want to know the activation of these task contrasts within each thalamus nucleus?
 
@@ -60,10 +61,9 @@ First we need to know where to find the beta estimates for these task contrasts.
     -- At sub-brick #22 'Switch_GLT_R^2' datum type is float:            0 to      0.125225
        statcode = fibt;  statpar = 0.5 104.5
 
-Here we can see sub-brick #11 and #14 are the beta estimates for the task contrasts we are interested. Then we can use 3dROIstats to get the mean beta estimates within each thalamus nucleus
+Here we can see sub-brick #11 and #14 are the beta estimates for the task contrasts we are interested. Then we can use 3dROIstats to get the mean beta estimates within each thalamus nucleus. Also see: https://afni.nimh.nih.gov/pub/dist/doc/program_help/3dROIstats.html
 
     3dROIstats -mask /data/backed_up/shared/ROIs/Morel_2.5.nii.gz /data/backed_up/shared/ThalHi_MRI_2020/3dDeconvolve/sub-10006/sub-10006_FIRmodel_MNI_stats+tlrc > stats_10006.txt
-
 
 And if we open up the resulting output stats_10006.txt
 
@@ -81,6 +81,6 @@ Alternatively, you can restrict the input to 3dROIstats by using "[]" to select 
 
 From this output, we know the average beta estimate for contrast EDS-IDS, within the first ROI (Mean_1), the AN nucleus, is 28.32. For the second ROI (Mean_2), the VM nucleus, it is 46.33 You can repeat this process for every other subject, to summarize the activation for different thalamic nuclei for different task contrasts.
 
-
+Another program that you can use is 3dmaskave. If you are familiar with bash scripting and piping outputs, you can try to write a script to go through each subjects and compile the ROI values for further analysis.
 
 End of notebook.
