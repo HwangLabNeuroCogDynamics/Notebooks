@@ -15,4 +15,4 @@ Then need to project the nii file onto the surface, need to specify the end surf
 
 Open up wb_view on thalamege, you can load both the surface file and the new shape.gii files you created. The workbench menu will have demos on how to play around its GUI system. Suitable surfaces can be found under /data/backed_up/shared/wb_files/HCP_S1200_GroupAvg_v1
 
-![image](wb.PNG)
+![image](wb.png)
