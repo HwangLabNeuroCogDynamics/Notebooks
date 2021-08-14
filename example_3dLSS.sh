@@ -24,6 +24,7 @@ for subject in 10054; do
     # otherwise "local times" won't work properly. Also not that if you have a subject with different number of runs or different run length, you will have to set this up differntly.
     # As for the stim_times, here we are going to pull out single trial betas for the "dcb" condition, while putting all other conditions in the model.
     # We will have to do iterate through this 8  times, each time using a different condtion for the stim_times_IM option, while leaving the others in the stim_times column.
+    # As for the basis function, we would have to think about whether TENT is appropriate.
     3dDeconvolve -input errts.nii.gz \
     -concat '1D: 0 216 432 648 864 1080 1296 1512' \
     -mask combined_mask+tlrc.BRIK \
