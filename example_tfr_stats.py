@@ -47,7 +47,7 @@ for i, sub in enumerate(subjects):
         subs_eds[i,:,:,:] = EDS_tfr[(EDS_tfr.metadata['trial_Corr']==1)].average().data #average all the correct trials, then put into the subject array
         # one issue that I encoutered is not all subjects have 64 channels of data, this appears because if a channel is rejected, its TFR output will not be saved. This is problematic, and I 
         # think the best way to handel this is to interpolate the bad channels. At this point I don't have code to do that. So we will have that leave that as a challenge to solve in the future.
-        
+
         subs_ids[i,:,:,:] = IDS_tfr[(IDS_tfr.metadata['trial_Corr']==1)].average().data
         subs_stay[i,:,:,:] = stay_tfr[(stay_tfr.metadata['trial_Corr']==1)].average().data
     except:
@@ -96,7 +96,8 @@ EDS_v_Stay_tfr = mne.time_frequency.AverageTFR(info = stay_tfr.info, data = T_ob
 EDS_v_Stay_tfr.plot_topo() #because I inserted a fake cluster, this will be very much out of scale
 
 # A few practices
-# 1. This is just paired sample t test, what about an ANOVA test of EDS, IDS, Stay? Hint, look at spatio_temporal_cluster_test
-# 2. Are there other ways of visulize the data? Hint, you will have to play around with the mask
-# 3. This is statistics on time-frequency data? What about evoked data? Hint, yes the function applies to evoked data as well, but you will have to think carefully about the data dimension.
+# 1. What about a one sample t test on one condition (testing againt zero)? 
+# 2. This is just paired sample t test, what about an ANOVA test of EDS, IDS, Stay? Hint, look at spatio_temporal_cluster_test
+# 3. Are there other ways of visulize the data? Hint, you will have to play around with the mask
+# 4. This is statistics on time-frequency data? What about evoked data? Hint, yes the function applies to evoked data as well, but you will have to think carefully about the data dimension.
 
