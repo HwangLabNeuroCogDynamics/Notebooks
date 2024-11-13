@@ -67,6 +67,37 @@ for i, f in enumerate(rest_files):
 
 
 
+#### after you are done with caluclating FC maps from individual subjects, we can a do group level t stats
+lesion_id = '2662' #do one lesion mask at a time
+maps = glob.glob("/data/backed_up/shared/ThalHi_EEG/stats/lesion_network_mapping/%s_*.nii.gz" %lesion_id) #list all the fc maps
 
+# this is the MNI mask where we will use to extract all the FC values from each map
+mni_mask = nib.load("/data/backed_up/shared/ROIs/mni_brain_mask_2mm.nii.gz")
+brain_masker = NiftiMasker(mni_mask)
 
+fc_values = []
+for m in maps:
+    fc = brain_masker.fit_transform(m)
+    print(fc.shape) # this is the number of voxels inside the MNI mask
+    fc_values.append(fc[0,:]) 
+fc_values = np.array(fc_values) #this will concatenate all the voxel-wise fc values into one numpy array
+print(fc_values.shape)    #the end result is subject by # of voxels
+
+## now we do a t test for each voxel
+def fc_test(fc):
+    from scipy import stats
+    t, p = stats.ttest_1samp(fc, 0) #ttest against zero
+    return t
+
+# Apply fc_test function in parallel across the second dimension (i.e., voxels) of fc_values
+t_stats = Parallel(n_jobs=12)(delayed(fc_test)(fc_values[:, i]) for i in range(fc_values.shape[1]))
+t_stats = np.array(t_stats)
+print(t_stats.shape) #make sure the size matches the number of voxels
+
+# now put the t stat back to MNI space to save and for visualization
+t_stat_img = brain_masker.inverse_transform(t_stats)
+t_stat_img.to_filename("/data/backed_up/shared/ThalHi_EEG/stats/t_stats_%s.nii.gz" %lesion_id) #save it to file
+
+#you can use this to plot it if you like
+#plot_stat_map(t_stat_img, display_mode="z", threshold=10, title="Group level Seed-based Connectivity for lesion %s" %lesion_id)
 
